@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduAdmin 3D - Sistem Administrasi Kelas (Firebase & Vercel)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome untuk Ikon 3D & UI -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at top left, #1d4ed8, #1e3a8a 45%, #0f172a 100%);
+      min-height: 100vh;
+      color: #f8fafc;
+      overflow-x: hidden;
+    }
+
+    /* Efek 3D Claymorphism & Glassmorphism */
+    .card-3d {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 
+        0 20px 35px -10px rgba(7, 17, 45, 0.6),
+        inset 0 2px 3px rgba(255, 255, 255, 0.35),
+        inset 0 -3px 6px rgba(15, 23, 42, 0.4);
+      border-radius: 1.5rem;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+    }
+
+    .card-3d-white {
+      background: linear-gradient(145deg, #ffffff, #f1f5f9);
+      color: #1e293b;
+      border-radius: 1.5rem;
+      box-shadow: 
+        0 18px 30px -8px rgba(10, 25, 65, 0.45),
+        inset 0 3px 4px rgba(255, 255, 255, 1),
+        inset 0 -4px 8px rgba(203, 213, 225, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    /* Tombol 3D Tactile dengan efek tekan */
+    .btn-3d {
+      position: relative;
+      transition: all 0.15s ease;
+      transform: translateY(0);
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+    }
+
+    /* Warna-warni Menu 3D */
+    .btn-3d-blue {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      box-shadow: 0 6px 0 #1e3a8a, 0 12px 20px rgba(29, 78, 216, 0.4);
+    }
+    .btn-3d-blue:active { box-shadow: 0 2px 0 #1e3a8a; }
+
+    .btn-3d-emerald {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 6px 0 #065f46, 0 12px 20px rgba(16, 185, 129, 0.35);
+    }
+    .btn-3d-emerald:active { box-shadow: 0 2px 0 #065f46; }
+
+    .btn-3d-amber {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 6px 0 #92400e, 0 12px 20px rgba(245, 158, 11, 0.35);
+    }
+    .btn-3d-amber:active { box-shadow: 0 2px 0 #92400e; }
+
+    .btn-3d-purple {
+      background: linear-gradient(135deg, #a855f7, #7e22ce);
+      box-shadow: 0 6px 0 #581c87, 0 12px 20px rgba(168, 85, 247, 0.35);
+    }
+    .btn-3d-purple:active { box-shadow: 0 2px 0 #581c87; }
+
+    .btn-3d-rose {
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      box-shadow: 0 6px 0 #9f1239, 0 12px 20px rgba(244, 63, 94, 0.35);
+    }
+    .btn-3d-rose:active { box-shadow: 0 2px 0 #9f1239; }
+
+    /* Bola Dekorasi 3D Melayang */
+    .orb-3d {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(2px);
+      z-index: 0;
+      pointer-events: none;
+      animation: floatOrb 8s ease-in-out infinite;
+    }
+    @keyframes floatOrb {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-22px) rotate(8deg); }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.3); }
+    ::-webkit-scrollbar-thumb { background: rgba(96, 165, 250, 0.5); border-radius: 999px; }
+  </style>
+</head>
+<body class="antialiased selection:bg-cyan-400 selection:text-slate-900">
+
+  <!-- Elemen Latar Belakang 3D Melayang -->
+  <div class="orb-3d w-72 h-72 -top-16 -left-16 bg-gradient-to-br from-cyan-400/30 to-blue-600/10 shadow-2xl"></div>
+  <div class="orb-3d w-96 h-96 bottom-10 -right-24 bg-gradient-to-tr from-purple-500/25 to-pink-500/10 shadow-2xl" style="animation-delay: 2s;"></div>
+  <div class="orb-3d w-48 h-48 top-1/2 left-1/3 bg-gradient-to-br from-amber-400/20 to-emerald-400/10 shadow-xl" style="animation-delay: 4s;"></div>
+
+  <!-- Notifikasi Toast 3D -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- Loading Overlay 3D -->
+  <div id="global-loader" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex flex-col items-center justify-center hidden">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-600 animate-spin shadow-2xl flex items-center justify-center">
+      <div class="w-10 h-10 bg-slate-900 rounded-xl"></div>
+    </div>
+    <p id="loader-text" class="mt-4 text-cyan-200 font-semibold tracking-wide animate-pulse">Menghubungkan ke Firebase Cloud...</p>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- HALAMAN 1: SISTEM LOGIN 3D                                            -->
+  <!-- ===================================================================== -->
+  <section id="login-view" class="relative z-10 min-h-screen flex items-center justify-center p-4">
+    <div class="card-3d w-full max-w-md p-8 sm:p-10">
+      <div class="text-center mb-8">
+        <!-- Ikon Kubus/Topi Toga 3D -->
+        <div class="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 p-0.5 shadow-xl transform -rotate-6 hover:rotate-0 transition-transform duration-300">
+          <div class="w-full h-full bg-slate-900/40 backdrop-blur-sm rounded-3xl flex items-center justify-center">
+            <i class="fa-solid fa-graduation-cap text-4xl text-white drop-shadow-md"></i>
+          </div>
+        </div>
+        <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent">
+          EduAdmin 3D
+        </h1>
+        <p class="text-blue-200/80 text-sm mt-1">Sistem Administrasi Kelas • Firebase Cloud Backend</p>
+      </div>
+
+      <form id="login-form" class="space-y-5">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-2">Username</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-blue-300">
+              <i class="fa-solid fa-user-astronaut"></i>
+            </span>
+            <input type="text" id="login-username" required placeholder="Masukkan username (admin)"
+              class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-slate-900/50 border border-blue-400/30 text-white placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-2">Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-blue-300">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input type="password" id="login-password" required placeholder="Masukkan password (admin123)"
+              class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-slate-900/50 border border-blue-400/30 text-white placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-4 rounded-2xl font-bold text-white text-base btn-3d btn-3d-blue flex items-center justify-center gap-2 mt-2">
+          <span>Masuk ke Dashboard</span>
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-5 border-t border-white/10 text-center text-xs text-blue-200/70 space-y-1">
+        <p>Default Login: <span class="font-bold text-cyan-300">admin</span> / <span class="font-bold text-cyan-300">admin123</span></p>
+        <p id="firebase-connection-hint" class="text-[11px] text-amber-300/90"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- HALAMAN 2: DASHBOARD UTAMA 3D                                         -->
+  <!-- ===================================================================== -->
+  <section id="dashboard-view" class="relative z-10 min-h-screen hidden pb-12">
+    
+    <!-- Top Navbar 3D -->
+    <header class="sticky top-0 z-30 px-4 pt-4">
+      <div class="max-w-7xl mx-auto card-3d px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg">
+            <i class="fa-solid fa-cubes text-white text-xl"></i>
+          </div>
+          <div>
+            <h2 id="header-school-name" class="font-extrabold text-lg sm:text-xl text-white leading-tight">SMA NEGERI 1 NUSANTARA</h2>
+            <div class="flex flex-wrap items-center gap-2 text-xs text-cyan-200 mt-0.5">
+              <span id="header-class-badge" class="px-2.5 py-0.5 rounded-full bg-blue-500/40 border border-cyan-300/30 font-semibold">Kelas: XII IPA 1</span>
+              <span id="firebase-status-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/30 border border-emerald-300/30 text-emerald-200 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Firebase Realtime Active
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <p id="user-fullname" class="text-sm font-bold text-white">Budi Santoso, S.Pd.</p>
+            <p id="user-role" class="text-xs text-blue-200">Wali Kelas</p>
+          </div>
+          <button onclick="logout()" class="px-4 py-2.5 rounded-xl font-bold text-sm text-white btn-3d btn-3d-rose flex items-center gap-2">
+            <i class="fa-solid fa-power-off"></i>
+            <span class="hidden sm:inline">Keluar</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Kontainer Utama -->
+    <main class="max-w-7xl mx-auto px-4 mt-6">
+      
+      <!-- Navigasi Menu 3D Warna-Warni -->
+      <nav class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
+        <button onclick="switchTab('ringkasan')" id="nav-ringkasan" class="nav-btn p-4 rounded-2xl font-bold text-white btn-3d btn-3d-blue flex flex-col sm:flex-row items-center justify-center gap-2.5 ring-4 ring-white/40">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <span>Ringkasan</span>
+        </button>
+
+        <button onclick="switchTab('absensi')" id="nav-absensi" class="nav-btn p-4 rounded-2xl font-bold text-white btn-3d btn-3d-emerald flex flex-col sm:flex-row items-center justify-center gap-2.5 opacity-85 hover:opacity-100">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-clipboard-user"></i>
+          </div>
+          <span>a. Absensi Kelas</span>
+        </button>
+
+        <button onclick="switchTab('jurnal')" id="nav-jurnal" class="nav-btn p-4 rounded-2xl font-bold text-white btn-3d btn-3d-amber flex flex-col sm:flex-row items-center justify-center gap-2.5 opacity-85 hover:opacity-100">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-book-open-reader"></i>
+          </div>
+          <span>b. Jurnal Kelas</span>
+        </button>
+
+        <button onclick="switchTab('siswa')" id="nav-siswa" class="nav-btn p-4 rounded-2xl font-bold text-white btn-3d btn-3d-purple flex flex-col sm:flex-row items-center justify-center gap-2.5 opacity-85 hover:opacity-100">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-users-viewfinder"></i>
+          </div>
+          <span>c. Data Siswa</span>
+        </button>
+
+        <button onclick="switchTab('setting')" id="nav-setting" class="col-span-2 lg:col-span-1 nav-btn p-4 rounded-2xl font-bold text-white btn-3d btn-3d-rose flex flex-col sm:flex-row items-center justify-center gap-2.5 opacity-85 hover:opacity-100">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <span>d. Setting</span>
+        </button>
+      </nav>
+
+      <!-- =================================================================== -->
+      <!-- TAB 0: RINGKASAN DASHBOARD 3D                                       -->
+      <!-- =================================================================== -->
+      <div id="tab-ringkasan" class="tab-content space-y-6">
+        <!-- Kartu Statistik 3D Warna-warni -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div class="card-3d p-6 border-l-8 border-cyan-400">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-cyan-200">Total Siswa Aktif</p>
+                <h3 id="stat-total-siswa" class="text-4xl font-extrabold text-white mt-2">0</h3>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-user-graduate text-xl text-white"></i>
+              </div>
+            </div>
+            <p class="text-xs text-blue-200 mt-4">Tersimpan di Cloud Firestore</p>
+          </div>
+
+          <div class="card-3d p-6 border-l-8 border-emerald-400">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-emerald-200">Kehadiran Hari Ini</p>
+                <h3 id="stat-hadir-hari-ini" class="text-4xl font-extrabold text-white mt-2">-</h3>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-check-double text-xl text-white"></i>
+              </div>
+            </div>
+            <p id="stat-hadir-detail" class="text-xs text-emerald-200 mt-4">Belum ada absensi hari ini</p>
+          </div>
+
+          <div class="card-3d p-6 border-l-8 border-amber-400">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-amber-200">Total Jurnal Kelas</p>
+                <h3 id="stat-total-jurnal" class="text-4xl font-extrabold text-white mt-2">0</h3>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-book-bookmark text-xl text-white"></i>
+              </div>
+            </div>
+            <p class="text-xs text-amber-200 mt-4">Catatan KBM tersimpan rapi</p>
+          </div>
+
+          <div class="card-3d p-6 border-l-8 border-purple-400">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-purple-200">Hosting & Backend</p>
+                <h3 class="text-2xl font-extrabold text-white mt-3">Vercel + Firebase</h3>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-400 to-fuchsia-600 flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-bolt text-xl text-white"></i>
+              </div>
+            </div>
+            <p class="text-xs text-purple-200 mt-4">Sinkronisasi real-time otomatis</p>
+          </div>
+        </div>
+
+        <!-- Panel Aktivitas Terbaru -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="card-3d-white p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-amber-500"></span> Jurnal Mengajar Terbaru
+              </h3>
+              <button onclick="switchTab('jurnal')" class="text-xs font-bold text-blue-600 hover:underline">Lihat Semua &rarr;</button>
+            </div>
+            <div id="recent-jurnal-list" class="space-y-3">
+              <!-- Diisi via JS -->
+            </div>
+          </div>
+
+          <div class="card-3d-white p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Akses Cepat Menu 3D
+              </h3>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="switchTab('absensi')" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-left transition">
+                <i class="fa-solid fa-user-check text-2xl text-emerald-600 mb-2"></i>
+                <p class="font-bold text-slate-800 text-sm">Input Absensi</p>
+                <p class="text-xs text-slate-500">Catat kehadiran harian</p>
+              </button>
+              <button onclick="switchTab('jurnal')" class="p-4 rounded-2xl bg-amber-50 border border-amber-200 hover:bg-amber-100 text-left transition">
+                <i class="fa-solid fa-pen-nib text-2xl text-amber-600 mb-2"></i>
+                <p class="font-bold text-slate-800 text-sm">Isi Jurnal KBM</p>
+                <p class="text-xs text-slate-500">Laporan materi ajar</p>
+              </button>
+              <button onclick="switchTab('siswa')" class="p-4 rounded-2xl bg-purple-50 border border-purple-200 hover:bg-purple-100 text-left transition">
+                <i class="fa-solid fa-user-plus text-2xl text-purple-600 mb-2"></i>
+                <p class="font-bold text-slate-800 text-sm">Kelola Siswa</p>
+                <p class="text-xs text-slate-500">Tambah / edit data siswa</p>
+              </button>
+              <button onclick="seedSampleData()" class="p-4 rounded-2xl bg-blue-50 border border-blue-200 hover:bg-blue-100 text-left transition">
+                <i class="fa-solid fa-wand-magic-sparkles text-2xl text-blue-600 mb-2"></i>
+                <p class="font-bold text-slate-800 text-sm">Isi Data Contoh</p>
+                <p class="text-xs text-slate-500">Generate 5 siswa awal</p>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB A: ABSENSI KELAS                                                -->
+      <!-- =================================================================== -->
+      <div id="tab-absensi" class="tab-content hidden space-y-6">
+        <div class="card-3d-white p-6 sm:p-8">
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-700">MENU A • KEHADIRAN</span>
+              <h3 class="text-2xl font-extrabold text-slate-800 mt-1">Absensi Kelas Harian</h3>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Tanggal Absensi</label>
+                <input type="date" id="absensi-tanggal" onchange="renderAbsensiTable()" class="px-4 py-2.5 rounded-xl border border-slate-300 font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <button onclick="setAllHadir()" class="mt-5 px-4 py-2.5 rounded-xl bg-emerald-100 text-emerald-700 font-bold text-sm hover:bg-emerald-200 transition">
+                <i class="fa-solid fa-check-circle mr-1"></i> Hadir Semua
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabel Absensi -->
+          <div class="overflow-x-auto mt-6">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider">
+                  <th class="p-3.5 rounded-tl-xl">No</th>
+                  <th class="p-3.5">NIS</th>
+                  <th class="p-3.5">Nama Siswa</th>
+                  <th class="p-3.5">Status Kehadiran</th>
+                  <th class="p-3.5 rounded-tr-xl">Keterangan</th>
+                </tr>
+              </thead>
+              <tbody id="absensi-tbody" class="divide-y divide-slate-200 text-sm">
+                <!-- Diisi via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-6 flex justify-end">
+            <button onclick="submitAbsensi()" class="px-8 py-3.5 rounded-2xl font-bold text-white btn-3d btn-3d-emerald flex items-center gap-2">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Simpan Absensi ke Firebase</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB B: JURNAL KELAS                                                 -->
+      <!-- =================================================================== -->
+      <div id="tab-jurnal" class="tab-content hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Form Tambah Jurnal -->
+          <div class="card-3d-white p-6 h-fit">
+            <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-700">INPUT JURNAL</span>
+            <h3 class="text-xl font-extrabold text-slate-800 mt-2 mb-4">Catat Jurnal Mengajar</h3>
+            
+            <form id="jurnal-form" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Tanggal</label>
+                <input type="date" id="jurnal-tanggal" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Jam Ke-</label>
+                  <input type="text" id="jurnal-jam" placeholder="Contoh: 1-2" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Kelas</label>
+                  <input type="text" id="jurnal-kelas" readonly class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-300 text-sm font-bold text-slate-600">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Mata Pelajaran</label>
+                <input type="text" id="jurnal-mapel" placeholder="Contoh: Matematika Peminatan" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Materi Pokok / KD</label>
+                <input type="text" id="jurnal-materi" placeholder="Judul materi pembelajaran" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Kegiatan & Catatan Kelas</label>
+                <textarea id="jurnal-kegiatan" rows="3" placeholder="Ringkasan aktivitas belajar siswa..." required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"></textarea>
+              </div>
+              <button type="submit" class="w-full py-3.5 rounded-2xl font-bold text-white btn-3d btn-3d-amber flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus-circle"></i> Simpan Jurnal Kelas
+              </button>
+            </form>
+          </div>
+
+          <!-- Daftar Jurnal -->
+          <div class="lg:col-span-2 card-3d-white p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-700">ARSIP KBM</span>
+                <h3 class="text-xl font-extrabold text-slate-800 mt-1">Riwayat Jurnal Kelas</h3>
+              </div>
+            </div>
+            <div id="jurnal-list-container" class="space-y-4 max-h-[600px] overflow-y-auto pr-1">
+              <!-- Diisi via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB C: DATA SISWA                                                   -->
+      <!-- =================================================================== -->
+      <div id="tab-siswa" class="tab-content hidden space-y-6">
+        <div class="card-3d-white p-6 sm:p-8">
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-purple-100 text-purple-700">MENU C • MASTER DATA</span>
+              <h3 class="text-2xl font-extrabold text-slate-800 mt-1">Manajemen Data Siswa</h3>
+            </div>
+            <button onclick="openSiswaModal()" class="px-6 py-3 rounded-2xl font-bold text-white btn-3d btn-3d-purple flex items-center gap-2">
+              <i class="fa-solid fa-user-plus"></i> Tambah Siswa Baru
+            </button>
+          </div>
+
+          <div class="overflow-x-auto mt-6">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-purple-50 text-purple-900 text-xs uppercase tracking-wider">
+                  <th class="p-3.5 rounded-tl-xl">No</th>
+                  <th class="p-3.5">NIS</th>
+                  <th class="p-3.5">Nama Lengkap</th>
+                  <th class="p-3.5">L/P</th>
+                  <th class="p-3.5">Kelas</th>
+                  <th class="p-3.5">Status</th>
+                  <th class="p-3.5 rounded-tr-xl text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="siswa-tbody" class="divide-y divide-slate-200 text-sm">
+                <!-- Diisi via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB D: SETTING & KONFIGURASI FIREBASE                               -->
+      <!-- =================================================================== -->
+      <div id="tab-setting" class="tab-content hidden space-y-6">
+        <div class="card-3d-white p-6 sm:p-8 max-w-4xl mx-auto">
+          <div class="pb-6 border-b border-slate-200">
+            <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-700">MENU D • KONFIGURASI SISTEM</span>
+            <h3 class="text-2xl font-extrabold text-slate-800 mt-1">Pengaturan Sekolah & Akun Admin</h3>
+            <p class="text-sm text-slate-500 mt-1">Semua perubahan pengaturan disimpan langsung ke Cloud Firestore secara real-time.</p>
+          </div>
+
+          <form id="setting-form" class="mt-6 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Nama Sekolah / Instansi</label>
+                <input type="text" id="set-nama-sekolah" required class="w-full px-4 py-3 rounded-xl border border-slate-300 font-semibold text-slate-800">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Tahun Ajaran</label>
+                <input type="text" id="set-tahun-ajaran" required class="w-full px-4 py-3 rounded-xl border border-slate-300 font-semibold text-slate-800">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Kelas Aktif</label>
+                <input type="text" id="set-kelas-aktif" required class="w-full px-4 py-3 rounded-xl border border-slate-300 font-semibold text-slate-800">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Nama Wali Kelas / Admin</label>
+                <input type="text" id="set-nama-admin" required class="w-full px-4 py-3 rounded-xl border border-slate-300 font-semibold text-slate-800">
+              </div>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-rose-50 border border-rose-200 space-y-4">
+              <h4 class="font-extrabold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-rose-600"></i> Keamanan Login Aplikasi
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Username Login</label>
+                  <input type="text" id="set-username" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Password Baru (Opsional)</label>
+                  <input type="password" id="set-new-password" placeholder="Kosongkan jika tidak ingin mengubah" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-4 pt-2">
+              <button type="submit" class="px-8 py-3.5 rounded-2xl font-bold text-white btn-3d btn-3d-rose flex items-center gap-2">
+                <i class="fa-solid fa-check-circle"></i> Simpan Semua Pengaturan
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL TAMBAH / EDIT SISWA 3D                                          -->
+  <!-- ===================================================================== -->
+  <div id="siswa-modal" class="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="card-3d-white w-full max-w-md p-6 sm:p-8 transform transition-all">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+        <h3 id="siswa-modal-title" class="text-xl font-extrabold text-slate-800">Tambah Siswa Baru</h3>
+        <button onclick="closeSiswaModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="siswa-form" class="mt-5 space-y-4">
+        <input type="hidden" id="modal-siswa-doc-id">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nomor Induk Siswa (NIS)</label>
+          <input type="text" id="modal-siswa-nis" required placeholder="Contoh: 2026010" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Nama Lengkap Siswa</label>
+          <input type="text" id="modal-siswa-nama" required placeholder="Nama lengkap sesuai absen" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Jenis Kelamin</label>
+            <select id="modal-siswa-jk" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold">
+              <option value="L">Laki-laki (L)</option>
+              <option value="P">Perempuan (P)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Kelas</label>
+            <input type="text" id="modal-siswa-kelas" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Status</label>
+          <select id="modal-siswa-status" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold">
+            <option value="Aktif">Aktif</option>
+            <option value="Pindah">Pindah</option>
+            <option value="Nonaktif">Nonaktif</option>
+          </select>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" onclick="closeSiswaModal()" class="px-5 py-2.5 rounded-xl bg-slate-200 text-slate-700 font-bold text-sm">Batal</button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl font-bold text-white btn-3d btn-3d-purple text-sm">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- FIREBASE SDK & LOGIKA APLIKASI REAL-TIME                              -->
+  <!-- ===================================================================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, 
+      collection, onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =========================================================================
+    // KONFIGURASI FIREBASE (GANTI DENGAN CONFIG PROJECT FIREBASE ANDA SAAT DEPLOY)
+    // =========================================================================
+    const firebaseConfig = {
+  	apiKey: "AIzaSyAkxpceCFlwAt_P-ShbIbbD5k3slkLnLfk",
+  	authDomain: "eduadmin-3d.firebaseapp.com",
+  	projectId: "eduadmin-3d",
+  	storageBucket: "eduadmin-3d.firebasestorage.app",
+  	messagingSenderId: "851149699884",
+  	appId: "1:851149699884:web:043d5189bc3fc7f863ca89"
+     };
+    // Gunakan konfigurasi environment otomatis jika tersedia, jika tidak gunakan manualFirebaseConfig
+    const firebaseConfig = typeof __firebase_config !== 'undefined' 
+      ? JSON.parse(__firebase_config) 
+      : manualFirebaseConfig;
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'eduadmin-3d-prod';
+
+    // Inisialisasi Firebase
+    let app, auth, db;
+    let isFirebaseConfigured = false;
+    let currentUser = null;
+
+    try {
+      if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("GANTI_DENGAN")) {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        isFirebaseConfigured = true;
+      } else {
+        document.getElementById('firebase-connection-hint').innerText = 
+          "Mode Demo Lokal aktif. Isi firebaseConfig di kode index.html untuk koneksi Cloud Firebase.";
+      }
+    } catch (err) {
+      console.error("Firebase Init Error:", err);
+    }
+
+    // State Global Aplikasi
+    const appState = {
+      isLoggedIn: false,
+      siswa: [],
+      absensi: [],
+      jurnal: [],
+      settings: {
+        nama_sekolah: 'SMA NEGERI 1 NUSANTARA',
+        tahun_ajaran: '2026/2027 - Ganjil',
+        kelas_aktif: 'XII IPA 1',
+        nama_admin: 'Budi Santoso, S.Pd.',
+        username: 'admin',
+        password: 'admin123'
+      }
+    };
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('absensi-tanggal').value = todayStr;
+    document.getElementById('jurnal-tanggal').value = todayStr;
+
+    // Helper UI
+    function setLoader(show, text = 'Memproses data...') {
+      const loader = document.getElementById('global-loader');
+      document.getElementById('loader-text').innerText = text;
+      if (show) loader.classList.remove('hidden');
+      else loader.classList.add('hidden');
+    }
+
+    window.showToast = function(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const colors = {
+        success: 'from-emerald-500 to-teal-600 border-emerald-300',
+        error: 'from-rose-500 to-red-600 border-rose-300',
+        info: 'from-blue-500 to-indigo-600 border-cyan-300'
+      };
+      const icons = {
+        success: 'fa-circle-check',
+        error: 'fa-triangle-exclamation',
+        info: 'fa-circle-info'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto p-4 rounded-2xl bg-gradient-to-r ${colors[type]} text-white border shadow-2xl flex items-center gap-3 transform transition-all duration-300`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icons[type]} text-xl"></i>
+        <p class="text-sm font-bold leading-snug">${message}</p>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    };
+
+    // =========================================================================
+    // AUTENTIKASI FIREBASE & INISIALISASI LISTENER REAL-TIME
+    // =========================================================================
+    async function initFirebaseAuth() {
+      if (!isFirebaseConfigured) return;
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (error) {
+        console.error("Auth Error:", error);
+        showToast("Gagal autentikasi Firebase: " + error.message, "error");
+      }
+    }
+
+    if (isFirebaseConfigured) {
+      initFirebaseAuth();
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          currentUser = user;
+          await ensureDefaultSettings();
+          setupRealtimeListeners();
+        }
+      });
+    }
+
+    // Pastikan dokumen settings default ada di Firestore
+    async function ensureDefaultSettings() {
+      if (!currentUser) return;
+      const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
+      try {
+        const snap = await getDoc(settingsRef);
+        if (!snap.exists()) {
+          await setDoc(settingsRef, appState.settings);
+        } else {
+          appState.settings = { ...appState.settings, ...snap.data() };
+        }
+      } catch (e) {
+        console.error("Error cek settings:", e);
+      }
+    }
+
+    // Listener Real-Time Firestore untuk semua koleksi
+    function setupRealtimeListeners() {
+      if (!currentUser) return;
+
+      // 1. Listener Settings
+      const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
+      onSnapshot(settingsRef, (docSnap) => {
+        if (docSnap.exists()) {
+          appState.settings = { ...appState.settings, ...docSnap.data() };
+          updateUI();
+        }
+      }, (err) => console.error("Settings snapshot error:", err));
+
+      // 2. Listener Siswa
+      const siswaCol = collection(db, 'artifacts', appId, 'public', 'data', 'siswa');
+      onSnapshot(siswaCol, (snapshot) => {
+        appState.siswa = snapshot.docs.map(d => ({ docId: d.id, ...d.data() }));
+        appState.siswa.sort((a, b) => String(a.NIS).localeCompare(String(b.NIS)));
+        updateUI();
+      }, (err) => console.error("Siswa snapshot error:", err));
+
+      // 3. Listener Absensi
+      const absensiCol = collection(db, 'artifacts', appId, 'public', 'data', 'absensi');
+      onSnapshot(absensiCol, (snapshot) => {
+        appState.absensi = snapshot.docs.map(d => ({ docId: d.id, ...d.data() }));
+        updateUI();
+      }, (err) => console.error("Absensi snapshot error:", err));
+
+      // 4. Listener Jurnal
+      const jurnalCol = collection(db, 'artifacts', appId, 'public', 'data', 'jurnal');
+      onSnapshot(jurnalCol, (snapshot) => {
+        appState.jurnal = snapshot.docs.map(d => ({ docId: d.id, ...d.data() }));
+        appState.jurnal.sort((a, b) => String(b.Tanggal).localeCompare(String(a.Tanggal)));
+        updateUI();
+      }, (err) => console.error("Jurnal snapshot error:", err));
+    }
+
+    // =========================================================================
+    // 1. SISTEM LOGIN APLIKASI
+    // =========================================================================
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inputUser = document.getElementById('login-username').value.trim();
+      const inputPass = document.getElementById('login-password').value.trim();
+
+      setLoader(true, 'Memverifikasi kredensial...');
+      try {
+        if (isFirebaseConfigured && currentUser) {
+          const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
+          const snap = await getDoc(settingsRef);
+          if (snap.exists()) {
+            appState.settings = { ...appState.settings, ...snap.data() };
+          }
+        }
+
+        if (inputUser.toLowerCase() === appState.settings.username.toLowerCase() && inputPass === appState.settings.password) {
+          appState.isLoggedIn = true;
+          document.getElementById('login-view').classList.add('hidden');
+          document.getElementById('dashboard-view').classList.remove('hidden');
+          updateUI();
+          showToast(`Selamat datang, ${appState.settings.nama_admin}!`, 'success');
+        } else {
+          showToast('Username atau Password salah!', 'error');
+        }
+      } catch (err) {
+        showToast('Gagal login: ' + err.message, 'error');
+      } finally {
+        setLoader(false);
+      }
+    });
+
+    window.logout = function() {
+      appState.isLoggedIn = false;
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('login-view').classList.remove('hidden');
+      document.getElementById('login-password').value = '';
+      showToast('Anda telah keluar dari sistem.', 'info');
+    };
+
+    // =========================================================================
+    // 2. PEMBARUAN TAMPILAN UI & NAVIGASI TAB
+    // =========================================================================
+    function updateUI() {
+      document.getElementById('header-school-name').innerText = appState.settings.nama_sekolah || 'SMA NEGERI 1 NUSANTARA';
+      document.getElementById('header-class-badge').innerText = 'Kelas: ' + (appState.settings.kelas_aktif || '-');
+      document.getElementById('user-fullname').innerText = appState.settings.nama_admin || 'Admin';
+      document.getElementById('jurnal-kelas').value = appState.settings.kelas_aktif || '';
+
+      // Form Settings
+      document.getElementById('set-nama-sekolah').value = appState.settings.nama_sekolah || '';
+      document.getElementById('set-tahun-ajaran').value = appState.settings.tahun_ajaran || '';
+      document.getElementById('set-kelas-aktif').value = appState.settings.kelas_aktif || '';
+      document.getElementById('set-nama-admin').value = appState.settings.nama_admin || '';
+      document.getElementById('set-username').value = appState.settings.username || 'admin';
+
+      // Statistik
+      const aktifSiswa = appState.siswa.filter(s => s.Status === 'Aktif');
+      document.getElementById('stat-total-siswa').innerText = aktifSiswa.length;
+      document.getElementById('stat-total-jurnal').innerText = appState.jurnal.length;
+
+      const absenHariIni = appState.absensi.filter(a => a.Tanggal === todayStr);
+      if (absenHariIni.length > 0) {
+        const hadirCount = absenHariIni.filter(a => a.Status === 'Hadir').length;
+        const pct = Math.round((hadirCount / absenHariIni.length) * 100);
+        document.getElementById('stat-hadir-hari-ini').innerText = pct + '%';
+        document.getElementById('stat-hadir-detail').innerText = `${hadirCount} dari ${absenHariIni.length} siswa hadir hari ini`;
+      } else {
+        document.getElementById('stat-hadir-hari-ini').innerText = '-';
+        document.getElementById('stat-hadir-detail').innerText = 'Belum ada absensi hari ini';
+      }
+
+      renderRecentJurnal();
+      renderAbsensiTable();
+      renderJurnalList();
+      renderSiswaTable();
+    }
+
+    window.switchTab = function(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('ring-4', 'ring-white/40');
+        btn.classList.add('opacity-85');
+      });
+      const activeBtn = document.getElementById('nav-' + tabName);
+      activeBtn.classList.add('ring-4', 'ring-white/40');
+      activeBtn.classList.remove('opacity-85');
+    };
+
+    function renderRecentJurnal() {
+      const container = document.getElementById('recent-jurnal-list');
+      const recent = appState.jurnal.slice(0, 3);
+      if (recent.length === 0) {
+        container.innerHTML = '<p class="text-sm text-slate-400 italic">Belum ada catatan jurnal kelas.</p>';
+        return;
+      }
+      container.innerHTML = recent.map(j => `
+        <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80">
+          <div class="flex justify-between text-xs font-bold text-amber-800">
+            <span>${j.Mata_Pelajaran} (Jam ${j.Jam_Ke})</span>
+            <span>${j.Tanggal}</span>
+          </div>
+          <p class="font-bold text-slate-800 text-sm mt-1">${j.Materi_Pokok}</p>
+          <p class="text-xs text-slate-600 mt-0.5 line-clamp-1">${j.Kegiatan_Catatan}</p>
+        </div>
+      `).join('');
+    }
+
+    // Generate Data Contoh ke Firebase
+    window.seedSampleData = async function() {
+      const sampleSiswa = [
+        { NIS: '2026001', Nama_Siswa: 'Ahmad Fauzi', Jenis_Kelamin: 'L', Kelas: appState.settings.kelas_aktif, Status: 'Aktif' },
+        { NIS: '2026002', Nama_Siswa: 'Siti Aminah', Jenis_Kelamin: 'P', Kelas: appState.settings.kelas_aktif, Status: 'Aktif' },
+        { NIS: '2026003', Nama_Siswa: 'Rizky Pratama', Jenis_Kelamin: 'L', Kelas: appState.settings.kelas_aktif, Status: 'Aktif' },
+        { NIS: '2026004', Nama_Siswa: 'Nabila Putri', Jenis_Kelamin: 'P', Kelas: appState.settings.kelas_aktif, Status: 'Aktif' },
+        { NIS: '2026005', Nama_Siswa: 'Dimas Anggara', Jenis_Kelamin: 'L', Kelas: appState.settings.kelas_aktif, Status: 'Aktif' }
+      ];
+
+      setLoader(true, 'Menambahkan 5 data siswa contoh...');
+      try {
+        if (isFirebaseConfigured && currentUser) {
+          const siswaCol = collection(db, 'artifacts', appId, 'public', 'data', 'siswa');
+          for (const s of sampleSiswa) {
+            await addDoc(siswaCol, s);
+          }
+        } else {
+          sampleSiswa.forEach((s, idx) => appState.siswa.push({ docId: 'demo-' + idx, ...s }));
+          updateUI();
+        }
+        showToast('5 Siswa contoh berhasil ditambahkan!', 'success');
+      } catch (err) {
+        showToast('Gagal menambah data contoh: ' + err.message, 'error');
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    // =========================================================================
+    // 3. MENU A: ABSENSI KELAS
+    // =========================================================================
+    window.renderAbsensiTable = function() {
+      const tbody = document.getElementById('absensi-tbody');
+      const selectedDate = document.getElementById('absensi-tanggal').value;
+      const aktifSiswa = appState.siswa.filter(s => s.Status === 'Aktif');
+
+      if (aktifSiswa.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Belum ada data siswa aktif. Silakan tambah di menu Data Siswa atau klik "Isi Data Contoh" di Ringkasan.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = aktifSiswa.map((s, index) => {
+        const existing = appState.absensi.find(a => a.Tanggal === selectedDate && String(a.NIS) === String(s.NIS));
+        const statusVal = existing ? existing.Status : 'Hadir';
+        const ketVal = existing ? (existing.Keterangan === '-' ? '' : existing.Keterangan) : '';
+
+        return `
+          <tr class="hover:bg-emerald-50/40 transition" data-nis="${s.NIS}" data-nama="${s.Nama_Siswa}">
+            <td class="p-3.5 font-bold text-slate-500">${index + 1}</td>
+            <td class="p-3.5 font-mono text-xs font-bold text-slate-700">${s.NIS}</td>
+            <td class="p-3.5 font-bold text-slate-800">${s.Nama_Siswa}</td>
+            <td class="p-3.5">
+              <select class="absen-status px-3 py-2 rounded-xl border border-slate-300 font-bold text-xs bg-white focus:ring-2 focus:ring-emerald-500">
+                <option value="Hadir" ${statusVal === 'Hadir' ? 'selected' : ''}>🟢 Hadir</option>
+                <option value="Sakit" ${statusVal === 'Sakit' ? 'selected' : ''}>🟡 Sakit</option>
+                <option value="Izin" ${statusVal === 'Izin' ? 'selected' : ''}>🔵 Izin</option>
+                <option value="Alpa" ${statusVal === 'Alpa' ? 'selected' : ''}>🔴 Alpa</option>
+              </select>
+            </td>
+            <td class="p-3.5">
+              <input type="text" class="absen-ket w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs" placeholder="Catatan opsional..." value="${ketVal}">
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    window.setAllHadir = function() {
+      document.querySelectorAll('.absen-status').forEach(sel => sel.value = 'Hadir');
+      showToast('Semua siswa ditandai Hadir.', 'info');
+    };
+
+    window.submitAbsensi = async function() {
+      const tanggal = document.getElementById('absensi-tanggal').value;
+      const kelas = appState.settings.kelas_aktif;
+      const rows = document.querySelectorAll('#absensi-tbody tr[data-nis]');
+      if (rows.length === 0) return;
+
+      setLoader(true, 'Menyimpan absensi ke Firebase...');
+      try {
+        for (const tr of rows) {
+          const nis = tr.getAttribute('data-nis');
+          const nama = tr.getAttribute('data-nama');
+          const status = tr.querySelector('.absen-status').value;
+          const ket = tr.querySelector('.absen-ket').value.trim() || '-';
+          const docKey = `${tanggal}_${nis}`;
+
+          const payload = {
+            Tanggal: tanggal,
+            Kelas: kelas,
+            NIS: nis,
+            Nama_Siswa: nama,
+            Status: status,
+            Keterangan: ket
+          };
+
+          if (isFirebaseConfigured && currentUser) {
+            const absenDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'absensi', docKey);
+            await setDoc(absenDocRef, payload);
+          } else {
+            const idx = appState.absensi.findIndex(a => a.docId === docKey);
+            if (idx > -1) appState.absensi[idx] = { docId: docKey, ...payload };
+            else appState.absensi.push({ docId: docKey, ...payload });
+          }
+        }
+        if (!isFirebaseConfigured) updateUI();
+        showToast('Absensi kelas berhasil disimpan!', 'success');
+      } catch (err) {
+        showToast('Gagal menyimpan absensi: ' + err.message, 'error');
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    // =========================================================================
+    // 4. MENU B: JURNAL KELAS
+    // =========================================================================
+    document.getElementById('jurnal-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        Tanggal: document.getElementById('jurnal-tanggal').value,
+        Jam_Ke: document.getElementById('jurnal-jam').value,
+        Kelas: document.getElementById('jurnal-kelas').value,
+        Mata_Pelajaran: document.getElementById('jurnal-mapel').value,
+        Materi_Pokok: document.getElementById('jurnal-materi').value,
+        Kegiatan_Catatan: document.getElementById('jurnal-kegiatan').value,
+        createdAt: new Date().toISOString()
+      };
+
+      setLoader(true, 'Menyimpan jurnal ke Firebase...');
+      try {
+        if (isFirebaseConfigured && currentUser) {
+          const jurnalCol = collection(db, 'artifacts', appId, 'public', 'data', 'jurnal');
+          await addDoc(jurnalCol, payload);
+        } else {
+          appState.jurnal.unshift({ docId: 'jrn-' + Date.now(), ...payload });
+          updateUI();
+        }
+
+        document.getElementById('jurnal-jam').value = '';
+        document.getElementById('jurnal-mapel').value = '';
+        document.getElementById('jurnal-materi').value = '';
+        document.getElementById('jurnal-kegiatan').value = '';
+        showToast('Jurnal kelas berhasil disimpan!', 'success');
+      } catch (err) {
+        showToast('Gagal menyimpan jurnal: ' + err.message, 'error');
+      } finally {
+        setLoader(false);
+      }
+    });
+
+    function renderJurnalList() {
+      const container = document.getElementById('jurnal-list-container');
+      if (appState.jurnal.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-slate-400">Belum ada jurnal mengajar yang dicatat.</div>';
+        return;
+      }
+
+      container.innerHTML = appState.jurnal.map(j => `
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-amber-400 transition">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span class="px-3 py-1 rounded-lg bg-amber-500 text-white text-xs font-extrabold">${j.Mata_Pelajaran}</span>
+              <span class="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 text-xs font-bold">Jam ke-${j.Jam_Ke}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-slate-500"><i class="fa-regular fa-calendar mr-1"></i>${j.Tanggal}</span>
+              <button onclick="removeJurnal('${j.docId}')" class="text-rose-500 hover:text-rose-700 text-xs font-bold px-2.5 py-1 rounded bg-rose-50">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <h4 class="font-extrabold text-slate-800 text-base">${j.Materi_Pokok}</h4>
+          <p class="text-sm text-slate-600 mt-1">${j.Kegiatan_Catatan}</p>
+        </div>
+      `).join('');
+    }
+
+    window.removeJurnal = async function(docId) {
+      setLoader(true, 'Menghapus jurnal...');
+      try {
+        if (isFirebaseConfigured && currentUser) {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'jurnal', docId));
+        } else {
+          appState.jurnal = appState.jurnal.filter(j => j.docId !== docId);
+          updateUI();
+        }
+        showToast('Jurnal berhasil dihapus.', 'info');
+      } catch (err) {
+        showToast('Gagal menghapus: ' + err.message, 'error');
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    // =========================================================================
+    // 5. MENU C: DATA SISWA
+    // =========================================================================
+    function renderSiswaTable() {
+      const tbody = document.getElementById('siswa-tbody');
+      if (appState.siswa.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">Belum ada data siswa. Klik "Tambah Siswa Baru" untuk memulai.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = appState.siswa.map((s, idx) => `
+        <tr class="hover:bg-purple-50/50 transition">
+          <td class="p-3.5 font-bold text-slate-500">${idx + 1}</td>
+          <td class="p-3.5 font-mono text-xs font-bold text-slate-700">${s.NIS}</td>
+          <td class="p-3.5 font-bold text-slate-800">${s.Nama_Siswa}</td>
+          <td class="p-3.5">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${s.Jenis_Kelamin === 'L' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}">
+              ${s.Jenis_Kelamin}
+            </span>
+          </td>
+          <td class="p-3.5 font-semibold text-slate-600">${s.Kelas}</td>
+          <td class="p-3.5">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${s.Status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}">
+              ${s.Status}
+            </span>
+          </td>
+          <td class="p-3.5 text-center space-x-1">
+            <button onclick='openSiswaModal(${JSON.stringify(s)})' class="px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 font-bold text-xs">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button onclick="removeSiswa('${s.docId}')" class="px-3 py-1.5 rounded-lg bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold text-xs">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    window.openSiswaModal = function(siswaObj = null) {
+      const modal = document.getElementById('siswa-modal');
+      if (siswaObj) {
+        document.getElementById('siswa-modal-title').innerText = 'Edit Data Siswa';
+        document.getElementById('modal-siswa-doc-id').value = siswaObj.docId;
+        document.getElementById('modal-siswa-nis').value = siswaObj.NIS;
+        document.getElementById('modal-siswa-nama').value = siswaObj.Nama_Siswa;
+        document.getElementById('modal-siswa-jk').value = siswaObj.Jenis_Kelamin;
+        document.getElementById('modal-siswa-kelas').value = siswaObj.Kelas;
+        document.getElementById('modal-siswa-status').value = siswaObj.Status;
+      } else {
+        document.getElementById('siswa-modal-title').innerText = 'Tambah Siswa Baru';
+        document.getElementById('modal-siswa-doc-id').value = '';
+        document.getElementById('modal-siswa-nis').value = '';
+        document.getElementById('modal-siswa-nama').value = '';
+        document.getElementById('modal-siswa-jk').value = 'L';
+        document.getElementById('modal-siswa-kelas').value = appState.settings.kelas_aktif || 'XII IPA 1';
+        document.getElementById('modal-siswa-status').value = 'Aktif';
+      }
+      modal.classList.remove('hidden');
+    };
+
+    window.closeSiswaModal = function() {
+      document.getElementById('siswa-modal').classList.add('hidden');
+    };
+
+    document.getElementById('siswa-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const docId = document.getElementById('modal-siswa-doc-id').value;
+      const payload = {
+        NIS: document.getElementById('modal-siswa-nis').value.trim(),
+        Nama_Siswa: document.getElementById('modal-siswa-nama').value.trim(),
+        Jenis_Kelamin: document.getElementById('modal-siswa-jk').value,
+        Kelas: document.getElementById('modal-siswa-kelas').value.trim(),
+        Status: document.getElementById('modal-siswa-status').value
+      };
+
+      closeSiswaModal();
+      setLoader(true, 'Menyimpan data siswa...');
+      try {
+        if (isFirebaseConfigured && currentUser) {
+          if (docId) {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'siswa', docId), payload);
+          } else {
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'siswa'), payload);
+          }
+        } else {
+          if (docId) {
+            const idx = appState.siswa.findIndex(s => s.docId === docId);
+            if (idx > -1) appState.siswa[idx] = { docId, ...payload };
+          } else {
+            appState.siswa.push({ docId: 'sis-' + Date.now(), ...payload });
+          }
+          updateUI();
+        }
+        showToast(docId ? 'Data siswa berhasil diperbarui!' : 'Siswa baru berhasil ditambahkan!', 'success');
+      } catch (err) {
+        showToast('Gagal menyimpan data siswa: ' + err.message, 'error');
+      } finally {
+        setLoader(false);
+      }
+    });
+
+    window.removeSiswa = async function(docId) {
+      setLoader(true, 'Menghapus data siswa...');
+      try {
+        if (isFirebaseConfigured && currentUser) {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'siswa', docId));
+        } else {
+          appState.siswa = appState.siswa.filter(s => s.docId !== docId);
+          updateUI();
+        }
+        showToast('Data siswa berhasil dihapus.', 'info');
+      } catch (err) {
+        showToast('Gagal menghapus: ' + err.message, 'error');
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    // =========================================================================
+    // 6. MENU D: SETTING
+    // =========================================================================
+    document.getElementById('setting-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newPass = document.getElementById('set-new-password').value.trim();
+      const updatedSettings = {
+        nama_sekolah: document.getElementById('set-nama-sekolah').value.trim(),
+        tahun_ajaran: document.getElementById('set-tahun-ajaran').value.trim(),
+        kelas_aktif: document.getElementById('set-kelas-aktif').value.trim(),
+        nama_admin: document.getElementById('set-nama-admin').value.trim(),
+        username: document.getElementById('set-username').value.trim(),
+        password: newPass !== '' ? newPass : appState.settings.password
+      };
+
+      setLoader(true, 'Menyimpan pengaturan ke Firebase...');
+      try {
+        if (isFirebaseConfigured && currentUser) {
+          const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
+          await setDoc(settingsRef, updatedSettings);
+        } else {
+          appState.settings = updatedSettings;
+          updateUI();
+        }
+        document.getElementById('set-new-password').value = '';
+        showToast('Pengaturan sekolah & akun berhasil disimpan!', 'success');
+      } catch (err) {
+        showToast('Gagal menyimpan pengaturan: ' + err.message, 'error');
+      } finally {
+        setLoader(false);
+      }
+    });
+  </script>
+</body>
+</html>
